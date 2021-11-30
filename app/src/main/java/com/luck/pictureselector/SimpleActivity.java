@@ -18,6 +18,7 @@ public class SimpleActivity extends AppCompatActivity implements View.OnClickLis
         btn_fragment = findViewById(R.id.btn_fragment);
         btn_activity.setOnClickListener(this);
         btn_fragment.setOnClickListener(this);
+        startActivity(new Intent(SimpleActivity.this, MainActivity.class));
     }
 
     @Override

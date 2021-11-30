@@ -36,6 +36,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.captlu.oos.Collection;
+import com.captlu.oos.Result;
+import com.captlu.oos.UploadFileVideo;
 import com.luck.picture.lib.PictureMediaScannerConnection;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.animators.AnimationType;
@@ -82,6 +85,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.functions.Consumer;
+
 /**
  * @author：luck
  * @data：2019/12/20 晚上 23:12
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cb_preview_img, cb_preview_video, cb_crop, cb_compress,
             cb_mode, cb_hide, cb_crop_circular, cb_styleCrop, cb_showCropGrid,
             cb_showCropFrame, cb_preview_audio, cb_original, cb_single_back,
-            cb_custom_camera, cbPage, cbEnabledMask,cbEditor;
+            cb_custom_camera, cbPage, cbEnabledMask, cbEditor;
     private int themeId;
     private int chooseMode = PictureMimeType.ofAll();
     private boolean isWeChatStyle;
@@ -858,9 +863,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+     //   List<LocalMedia> localMedia = PictureSelector.obtainMultipleResult(data);
+        OOSUPLOAD(data);
         if (resultCode == RESULT_OK) {
             if (requestCode == PictureConfig.CHOOSE_REQUEST) {// 图片选择结果回调
                 List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
+                //todo
                 // 例如 LocalMedia 里面返回五种path
                 // 1.media.getPath(); 原图path
                 // 2.media.getCutPath();裁剪后path，需判断media.isCut();切勿直接使用
@@ -898,6 +906,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mAdapter.notifyDataSetChanged();
             }
         }
+    }
+
+    private void OOSUPLOAD(Intent data) {
+        List<LocalMedia> localMedia = PictureSelector.obtainMultipleResult(data);
+        DialogUtils.show(MainActivity.this);
+        String path = localMedia.get(0).getPath();
+        UploadFileVideo uploadFileVideo = new UploadFileVideo(path, MainActivity.this);
+        uploadFileVideo.start();
+        uploadFileVideo.setBack(new UploadFileVideo.VideoCallBack() {
+            @Override
+            public void onSuccess(String name, String picName, String md5) {
+                DialogUtils.dismiss();
+                Collection.insert(name,picName,"",md5,integerResult -> {
+                    if (integerResult.getData() == 1){
+                        Toast.makeText(MainActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure() {
+                DialogUtils.dismiss();
+            }
+        });
     }
 
     @Override
