@@ -32,11 +32,17 @@ public class Collection {
         return api;
     }
 
-    public static Disposable insert( String uri, String imguri, String means, String md5,Consumer<Result<Integer>> consumer){
-        return getInstance().addVideo(uri,imguri,means,md5)
+    public static Disposable insert(String uri, String imguri, String means, String md5, Consumer<Result<Integer>> consumer) {
+        return getInstance().addVideo(uri, imguri, means, md5)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(consumer);
 
+    }
+
+    public static Disposable get(Consumer<VosBean> consumer) {
+        return getInstance().getSize(500).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer);
     }
 }
